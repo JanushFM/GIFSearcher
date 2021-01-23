@@ -1,14 +1,14 @@
-package com.testapp.gifsearcher.Adapters
+package com.testapp.gifsearcher.adapters
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.testapp.gifsearcher.Gif
 import com.testapp.gifsearcher.GifViewHolder
 import com.testapp.gifsearcher.R
+import com.testapp.gifsearcher.models.GiphyData
 
 class GIFRecyclerViewAdapter : RecyclerView.Adapter<GifViewHolder>() {
-    var listGIFs =  listOf<Gif>()
+    var listGiphyData =  listOf<GiphyData>()
         set(value) {
             field = value
             notifyDataSetChanged()
@@ -22,8 +22,8 @@ class GIFRecyclerViewAdapter : RecyclerView.Adapter<GifViewHolder>() {
     }
 
     override fun onBindViewHolder(holder: GifViewHolder, position: Int) {
-        holder.bind(listGIFs[position])
+        holder.bind(listGiphyData[position])
     }
 
-    override fun getItemCount(): Int = listGIFs.size
+    override fun getItemCount(): Int = listGiphyData.size
 }
