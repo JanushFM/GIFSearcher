@@ -1,4 +1,4 @@
-package com.testapp.gifsearcher.models
+package com.testapp.gifsearcher.models.giphyPOJOs
 
 data class GiphyData (
     val id: String,

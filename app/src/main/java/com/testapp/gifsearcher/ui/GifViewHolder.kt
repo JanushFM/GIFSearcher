@@ -1,4 +1,4 @@
-package com.testapp.gifsearcher
+package com.testapp.gifsearcher.ui
 
 import android.net.Uri
 import android.view.View
@@ -6,7 +6,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.facebook.drawee.backends.pipeline.Fresco
 import com.facebook.drawee.interfaces.DraweeController
 import com.facebook.drawee.view.SimpleDraweeView
-import com.testapp.gifsearcher.models.GiphyData
+import com.testapp.gifsearcher.R
+import com.testapp.gifsearcher.models.giphyPOJOs.GiphyData
 
 
 class GifViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {

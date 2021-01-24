@@ -5,6 +5,8 @@ buildscript {
         jcenter()
     }
     ext {
+        paging_version = "2.1.2"
+        lifecycle_version = "2.2.0"
         kotlin_version = "1.4.21"
         fresko_version = "2.4.0"
         retrofit_version = "2.9.0"

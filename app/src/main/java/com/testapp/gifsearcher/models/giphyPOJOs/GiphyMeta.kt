@@ -1,4 +1,4 @@
-package com.testapp.gifsearcher.models
+package com.testapp.gifsearcher.models.giphyPOJOs
 
 import com.google.gson.annotations.SerializedName
 
