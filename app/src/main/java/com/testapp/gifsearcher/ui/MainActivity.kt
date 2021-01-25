@@ -10,7 +10,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import com.facebook.drawee.backends.pipeline.Fresco
 import com.testapp.gifsearcher.R
 import com.testapp.gifsearcher.adapters.GifsAdapter
 import com.testapp.gifsearcher.viewModels.GifsLoaderViewModel
@@ -20,10 +19,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var gifsLoaderVM: GifsLoaderViewModel
     private lateinit var swipeContainer: SwipeRefreshLayout
+    private lateinit var searchView: SearchView
+    private val searchQueryKey = "searchQuery"
+    private var savedSearchQuery: CharSequence? = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Fresco.initialize(this); // Fresco needs to be initialized before you call setContentView()
         setContentView(R.layout.activity_main)
 
         gifsLoaderVM = ViewModelProvider(this).get(GifsLoaderViewModel::class.java)
@@ -31,6 +32,8 @@ class MainActivity : AppCompatActivity() {
         swipeContainer = findViewById(R.id.swipeContainer)
 
         setRecyclerView()
+
+        savedSearchQuery = savedInstanceState?.getCharSequence(searchQueryKey)
 
         swipeContainer.setOnRefreshListener {
             gifsLoaderVM.refreshGifs()
@@ -60,7 +63,15 @@ class MainActivity : AppCompatActivity() {
         inflater.inflate(R.menu.search_menu, menu)
 
         val searchItem = menu?.findItem(R.id.action_search)
-        val searchView = searchItem?.actionView as SearchView
+        searchView = searchItem?.actionView as SearchView
+
+        searchView.maxWidth = Int.MAX_VALUE
+        if (!savedSearchQuery.isNullOrEmpty()) {
+            searchItem.expandActionView()
+            searchView.setQuery(savedSearchQuery, false)
+            searchView.clearFocus()
+        }
+
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String): Boolean {
                 gifsLoaderVM.setQueryGifsGetter(query)
@@ -86,5 +97,10 @@ class MainActivity : AppCompatActivity() {
 
         })
         return true
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putCharSequence(searchQueryKey, searchView.query)
     }
 }

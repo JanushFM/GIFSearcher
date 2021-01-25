@@ -17,6 +17,7 @@ import io.reactivex.rxjava3.disposables.CompositeDisposable
 
 class GifsLoaderViewModel : ViewModel() {
     private var areSearchedGifsDisplayed = false
+    private var query: String = ""
     private val pageSize = 16
     private val giphyService = GiphyService.getService()
     private val compositeDisposable = CompositeDisposable()
@@ -49,6 +50,7 @@ class GifsLoaderViewModel : ViewModel() {
         getGifsFunc.value = fun(apiKey: String, limit: Int, offset: Int): Single<GiphyResponse> {
             return giphyService.getGifsBySearchTerm(apiKey, query, limit, offset)
         }
+        this.query = query
         areSearchedGifsDisplayed = true
     }
 
