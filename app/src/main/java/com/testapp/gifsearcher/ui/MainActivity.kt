@@ -1,8 +1,11 @@
 package com.testapp.gifsearcher.ui
 
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SearchView
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
@@ -37,6 +40,40 @@ class MainActivity : AppCompatActivity() {
         recyclerView.layoutManager = gridLayoutManager
         val adapter = GifsAdapter()
         recyclerView.adapter = adapter
-        gifsLoaderVM.gifsList.observe(this, adapter::submitList)
+        gifsLoaderVM.gifsList.observe(this, {
+            adapter.submitList(it) })
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        val inflater = menuInflater
+        inflater.inflate(R.menu.search_menu, menu)
+
+        val searchItem = menu?.findItem(R.id.action_search)
+        val searchView = searchItem?.actionView as SearchView
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String): Boolean {
+                gifsLoaderVM.setGifsGetterByQuery(query)
+                searchView.clearFocus()
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String): Boolean {
+                return false
+            }
+        })
+
+        searchItem.setOnActionExpandListener(object: MenuItem.OnActionExpandListener {
+            override fun onMenuItemActionExpand(item: MenuItem?): Boolean {
+                Toast.makeText(baseContext,"expanded !", Toast.LENGTH_SHORT).show()
+                return true
+            }
+
+            override fun onMenuItemActionCollapse(item: MenuItem?): Boolean {
+                gifsLoaderVM.tryToSetGifsGetterByTrends()
+                return true
+            }
+
+        })
+        return true
     }
 }

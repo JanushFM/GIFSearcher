@@ -2,23 +2,24 @@ package com.testapp.gifsearcher.models
 
 import androidx.lifecycle.MutableLiveData
 import androidx.paging.PositionalDataSource
-import com.testapp.gifsearcher.api.GiphyService
 import com.testapp.gifsearcher.models.giphyPOJOs.GiphyData
+import com.testapp.gifsearcher.models.giphyPOJOs.GiphyResponse
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 
 class GifsDataSource(
-    private val giphyService: GiphyService,
-    private val compositeDisposable: CompositeDisposable
+    private val compositeDisposable: CompositeDisposable,
+    private val getGifsFunc: (apiKey: String, limit: Int, offset: Int) -> Single<GiphyResponse>
 ) : PositionalDataSource<GiphyData>() {
     val state: MutableLiveData<State> = MutableLiveData()
 
     override fun loadInitial(params: LoadInitialParams, callback: LoadInitialCallback<GiphyData>) {
         updateState(State.LOADING)
-        val giphyResponse = giphyService.getTrendingFigs(
-            apiKey,
-            limit = params.requestedLoadSize,
-            offset = params.requestedStartPosition
-        )
+        val giphyResponse =
+            getGifsFunc(apiKey,
+                params.requestedLoadSize,
+                params.requestedStartPosition)
 
         compositeDisposable.add(
             giphyResponse
@@ -40,11 +41,10 @@ class GifsDataSource(
 
     override fun loadRange(params: LoadRangeParams, callback: LoadRangeCallback<GiphyData>) {
         updateState(State.LOADING)
-        val giphyResponse = giphyService.getTrendingFigs(
-            apiKey,
-            limit = params.loadSize,
-            offset = params.startPosition
-        )
+        val giphyResponse =
+            getGifsFunc(apiKey,
+                params.loadSize,
+                params.startPosition)
 
         compositeDisposable.add(
             giphyResponse.subscribe(

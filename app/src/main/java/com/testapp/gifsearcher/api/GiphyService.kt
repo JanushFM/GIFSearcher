@@ -34,8 +34,7 @@ interface GiphyService {
         fun getService(): GiphyService {
             val retrofit = Retrofit.Builder()
                 .addConverterFactory(GsonConverterFactory.create())
-                // Returns an instance which creates asynchronous observables that run on a background thread by default.
-                .addCallAdapterFactory(RxJava3CallAdapterFactory.create())
+                .addCallAdapterFactory(RxJava3CallAdapterFactory.createSynchronous())
                 .baseUrl(BASE_URL)
                 .build()
 
