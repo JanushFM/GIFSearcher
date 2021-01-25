@@ -27,8 +27,7 @@ class GifsLoaderViewModel : ViewModel() {
 
     init {
         setGifsGetterByTrends()
-        gifsDataSourceFactory =
-            GifsDataSourceFactory(compositeDisposable, getGifsFunc)
+        gifsDataSourceFactory = GifsDataSourceFactory(compositeDisposable, getGifsFunc)
         val config = PagedList.Config.Builder()
             .setInitialLoadSizeHint(pageSize * 3)
             .setPageSize(pageSize)
@@ -64,6 +63,10 @@ class GifsLoaderViewModel : ViewModel() {
         getGifsFunc.value = fun(apiKey: String, limit: Int, offset: Int): Single<GiphyResponse> {
             return giphyService.getTrendingFigs(apiKey, limit, offset)
         }
+    }
+
+    fun refreshGifs() {
+        gifsDataSourceFactory.gifsDataSourceLiveData.value?.refreshGifs()
     }
 
     override fun onCleared() {

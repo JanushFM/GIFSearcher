@@ -68,4 +68,8 @@ class GifsDataSource(
     companion object {
         private const val apiKey = "HiEkIy5bmsmDanYYJpIKtr65WcYXopQc"
     }
+
+    fun refreshGifs() {
+        invalidate()
+    }
 }
