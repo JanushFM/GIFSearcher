@@ -63,7 +63,7 @@ class MainActivity : AppCompatActivity() {
         val searchView = searchItem?.actionView as SearchView
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String): Boolean {
-                gifsLoaderVM.setGifsGetterByQuery(query)
+                gifsLoaderVM.setQueryGifsGetter(query)
                 searchView.clearFocus()
                 return false
             }
@@ -80,7 +80,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onMenuItemActionCollapse(item: MenuItem?): Boolean {
-                gifsLoaderVM.tryToSetGifsGetterByTrends()
+                gifsLoaderVM.tryToSetTrendingGifsGetter()
                 return true
             }
 

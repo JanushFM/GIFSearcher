@@ -29,7 +29,7 @@ class GifsDataSource(
                         callback.onResult(
                             response.data,
                             params.requestedStartPosition,
-                            response.pagination.totalCount
+                            response.pagination.totalCount.toInt()
                         )
                     },
                     {
