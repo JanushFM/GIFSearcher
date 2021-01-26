@@ -17,7 +17,6 @@ class GifsDataSource(
     private val compositeDisposable: CompositeDisposable,
     private val getGifsFunc: (apiKey: String, limit: Int, offset: Int) -> Single<GiphyResponse>
 ) : PositionalDataSource<GiphyData>() {
-    val loadingState: MutableLiveData<LoadingState> = MutableLiveData()
     val noNetworkState: MutableLiveData<LoadingState> = MutableLiveData()
     val unidentifiedErrorState: MutableLiveData<LoadingState> = MutableLiveData()
     val loadedState: MutableLiveData<LoadingState> = MutableLiveData()
@@ -58,7 +57,7 @@ class GifsDataSource(
     override fun loadRange(params: LoadRangeParams, callback: LoadRangeCallback<GiphyData>) {
         val giphyResponse =
             getGifsFunc(
-                "123",
+                BuildConfig.API_KEY,
                 params.loadSize,
                 params.startPosition
             )
