@@ -1,14 +1,70 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.swiperefreshlayout.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/swipeContainer"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ui.MainActivity">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler_view_gifs"
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipeContainer"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:scrollbars="vertical" />
-</androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+        android:layout_height="match_parent">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_view_gifs"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scrollbars="vertical" />
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/no_internet_Group"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:constraint_referenced_ids="no_internet_ImageView,loading_gifs_exception_TextView, swipe_to_refresh_TextView" />
+
+    <ImageView
+        android:id="@+id/no_internet_ImageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/no_internet_connection_icon"
+        android:src="@drawable/ic_no_internet"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/loading_gifs_exception_TextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/no_internet_connection"
+        android:textSize="30sp"
+        app:layout_constraintEnd_toEndOf="@id/no_internet_ImageView"
+        app:layout_constraintStart_toStartOf="@id/no_internet_ImageView"
+        app:layout_constraintTop_toBottomOf="@id/no_internet_ImageView" />
+
+    <TextView
+        android:id="@+id/swipe_to_refresh_TextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/swipe_to_refresh"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="@id/loading_gifs_exception_TextView"
+        app:layout_constraintStart_toStartOf="@id/loading_gifs_exception_TextView"
+        app:layout_constraintTop_toBottomOf="@id/loading_gifs_exception_TextView" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/retry_loading_FAB"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_margin="15dp"
+        android:visibility="gone"
+        android:src="@drawable/ic_refresh"/>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

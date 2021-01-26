@@ -3,15 +3,21 @@ package com.testapp.gifsearcher.ui
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
+import androidx.constraintlayout.widget.Group
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.testapp.gifsearcher.R
 import com.testapp.gifsearcher.adapters.GifsAdapter
+import com.testapp.gifsearcher.models.LoadingState
 import com.testapp.gifsearcher.viewModels.GifsLoaderViewModel
 
 
@@ -20,6 +26,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var gifsLoaderVM: GifsLoaderViewModel
     private lateinit var swipeContainer: SwipeRefreshLayout
     private lateinit var searchView: SearchView
+    private lateinit var gifsAdapter: GifsAdapter
+    private lateinit var loadingGifsExceptionTV: TextView
+    private lateinit var retryLoadingFAB: FloatingActionButton
+    private lateinit var noInternetGroup: Group
     private val searchQueryKey = "searchQuery"
     private var savedSearchQuery: CharSequence? = ""
 
@@ -27,11 +37,18 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        gifsLoaderVM = ViewModelProvider(this).get(GifsLoaderViewModel::class.java)
+        gifsLoaderVM = ViewModelProvider(
+            this, AndroidViewModelFactory(application)).get(GifsLoaderViewModel::class.java)
+
         recyclerView = findViewById(R.id.recycler_view_gifs)
         swipeContainer = findViewById(R.id.swipeContainer)
+        loadingGifsExceptionTV = findViewById(R.id.loading_gifs_exception_TextView)
+        retryLoadingFAB = findViewById(R.id.retry_loading_FAB)
+
+        noInternetGroup = findViewById(R.id.no_internet_Group)
 
         setRecyclerView()
+        setListeningLoadingState()
 
         savedSearchQuery = savedInstanceState?.getCharSequence(searchQueryKey)
 
@@ -39,9 +56,9 @@ class MainActivity : AppCompatActivity() {
             gifsLoaderVM.refreshGifs()
         }
 
-        gifsLoaderVM.getState().observe(this, {
-            Toast.makeText(this, it.name, Toast.LENGTH_SHORT).show()
-        })
+        retryLoadingFAB.setOnClickListener {
+            gifsLoaderVM.retryLoadingGifs()
+        }
     }
 
     private fun setRecyclerView() {
@@ -50,12 +67,44 @@ class MainActivity : AppCompatActivity() {
             StaggeredGridLayoutManager.VERTICAL
         )
         recyclerView.layoutManager = gridLayoutManager
-        val adapter = GifsAdapter()
-        recyclerView.adapter = adapter
+        gifsAdapter = GifsAdapter()
+        recyclerView.adapter = gifsAdapter
         gifsLoaderVM.gifsList.observe(this, {
-            adapter.submitList(it)
+            gifsAdapter.submitList(it)
             swipeContainer.isRefreshing = false
         })
+    }
+
+    private fun setListeningLoadingState() {
+        gifsLoaderVM.getLoadingStateAndIsGifsListEmpty()
+            .observe(this, { (loadingState, isGifsListEmpty) ->
+                if (isGifsListEmpty) {
+                    when (loadingState) {
+                        LoadingState.NETWORK_ERROR -> {
+                            noInternetGroup.visibility = View.VISIBLE
+                            loadingGifsExceptionTV.text = getString(R.string.no_internet_connection)
+                        }
+                        LoadingState.LOADED -> {
+                            noInternetGroup.visibility = View.GONE
+                        }
+                        else -> {
+                            noInternetGroup.visibility = View.VISIBLE
+                            loadingGifsExceptionTV.text = getString(R.string.unidentified_error)
+                        }
+                    }
+                } else {
+                    if (loadingState == LoadingState.NETWORK_ERROR) {
+                        retryLoadingFAB.visibility = View.VISIBLE
+                        Toast.makeText(
+                            this,
+                            getString(R.string.no_internet_connection),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    } else if (loadingState == LoadingState.LOADED) {
+                        retryLoadingFAB.visibility = View.GONE
+                    }
+                }
+            })
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -86,7 +135,6 @@ class MainActivity : AppCompatActivity() {
 
         searchItem.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
             override fun onMenuItemActionExpand(item: MenuItem?): Boolean {
-                Toast.makeText(baseContext, "expanded !", Toast.LENGTH_SHORT).show()
                 return true
             }
 

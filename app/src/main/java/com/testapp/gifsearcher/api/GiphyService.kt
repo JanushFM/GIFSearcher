@@ -1,7 +1,10 @@
 package com.testapp.gifsearcher.api
 
+import android.content.Context
+import com.testapp.gifsearcher.models.NetworkConnectionInterceptor
 import com.testapp.gifsearcher.models.giphyPOJOs.GiphyResponse
 import io.reactivex.rxjava3.core.Single
+import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava3.RxJava3CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
@@ -31,11 +34,15 @@ interface GiphyService {
         private const val LIMIT_QUERY = "limit"
         private const val OFFSET_QUERY = "offset"
 
-        fun getService(): GiphyService {
+        fun getService(context: Context): GiphyService {
+            val oktHttpClient = OkHttpClient.Builder()
+                .addInterceptor(NetworkConnectionInterceptor(context))
+
             val retrofit = Retrofit.Builder()
                 .addConverterFactory(GsonConverterFactory.create())
                 .addCallAdapterFactory(RxJava3CallAdapterFactory.createSynchronous())
                 .baseUrl(BASE_URL)
+                .client(oktHttpClient.build())
                 .build()
 
             return retrofit.create(GiphyService::class.java)

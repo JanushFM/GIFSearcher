@@ -11,10 +11,7 @@ import com.testapp.gifsearcher.ui.GifViewHolder
 class GifsAdapter : PagedListAdapter<GiphyData, GifViewHolder>(diffCallback) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): GifViewHolder {
-        val layoutInflater = LayoutInflater.from(parent.context)
-        val view = layoutInflater
-            .inflate(R.layout.item_gif, parent, false)
-        return GifViewHolder(view)
+        return GifViewHolder.create(parent)
     }
 
     override fun onBindViewHolder(holder: GifViewHolder, position: Int) {

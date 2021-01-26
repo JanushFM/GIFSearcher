@@ -1,29 +1,28 @@
 package com.testapp.gifsearcher.viewModels
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.*
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import com.testapp.gifsearcher.api.GiphyService
 import com.testapp.gifsearcher.models.GifsDataSource
 import com.testapp.gifsearcher.models.GifsDataSourceFactory
-import com.testapp.gifsearcher.models.State
+import com.testapp.gifsearcher.models.LoadingState
 import com.testapp.gifsearcher.models.giphyPOJOs.GiphyData
 import com.testapp.gifsearcher.models.giphyPOJOs.GiphyResponse
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 
-class GifsLoaderViewModel : ViewModel() {
+class GifsLoaderViewModel(application: Application) : AndroidViewModel(application) {
     private var areSearchedGifsDisplayed = false
     private var query: String = ""
     private val pageSize = 16
-    private val giphyService = GiphyService.getService()
+    private val giphyService = GiphyService.getService(application.baseContext)
     private val compositeDisposable = CompositeDisposable()
     private val gifsDataSourceFactory: GifsDataSourceFactory
     val gifsList: LiveData<PagedList<GiphyData>>
-    private val getGifsFunc = MutableLiveData<((apiKey: String, limit: Int, offset: Int) -> Single<GiphyResponse>)>()
+    private val getGifsFunc =
+        MutableLiveData<((apiKey: String, limit: Int, offset: Int) -> Single<GiphyResponse>)>()
 
 
     init {
@@ -35,16 +34,17 @@ class GifsLoaderViewModel : ViewModel() {
             .setEnablePlaceholders(false)
             .build()
 
-        gifsList =
-            Transformations.switchMap(getGifsFunc) { // switch map reacts on changes in query string
-                LivePagedListBuilder(gifsDataSourceFactory, config).build()
-            }
+        gifsList = Transformations.switchMap(getGifsFunc) {
+            LivePagedListBuilder(gifsDataSourceFactory, config).build()
+        }
     }
 
-    fun getState(): LiveData<State> = Transformations.switchMap(
-        gifsDataSourceFactory.gifsDataSourceLiveData,
-        GifsDataSource::state
-    )
+    fun getLoadingStateAndIsGifsListEmpty(): LiveData<Pair<LoadingState, Boolean>> = Transformations.map(
+        Transformations.switchMap(
+            gifsDataSourceFactory.gifsDataSourceLiveData,
+            GifsDataSource::loadingState
+        )
+    ) { Pair(it, gifsList.value.isNullOrEmpty()) }
 
     fun setQueryGifsGetter(query: String) {
         getGifsFunc.value = fun(apiKey: String, limit: Int, offset: Int): Single<GiphyResponse> {
@@ -55,7 +55,7 @@ class GifsLoaderViewModel : ViewModel() {
     }
 
     fun tryToSetTrendingGifsGetter() {
-        if(areSearchedGifsDisplayed) {
+        if (areSearchedGifsDisplayed) {
             setTrendingGifsGetter()
             areSearchedGifsDisplayed = false
         }
@@ -69,6 +69,10 @@ class GifsLoaderViewModel : ViewModel() {
 
     fun refreshGifs() {
         gifsDataSourceFactory.gifsDataSourceLiveData.value?.refreshGifs()
+    }
+
+    fun retryLoadingGifs() {
+        gifsDataSourceFactory.gifsDataSourceLiveData.value?.retryLoadingGifs()
     }
 
     override fun onCleared() {

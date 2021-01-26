@@ -1,7 +1,9 @@
 package com.testapp.gifsearcher.ui
 
 import android.net.Uri
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.facebook.drawee.backends.pipeline.Fresco
 import com.facebook.drawee.interfaces.DraweeController
@@ -24,6 +26,14 @@ class GifViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
         gifView.aspectRatio = giphyData.images.fixedHeight.width.toFloat() / giphyData.images.fixedHeight.height.toFloat()
         gifView.controller = controller
+    }
+
+    companion object {
+        fun create(parent: ViewGroup): GifViewHolder {
+            val view = LayoutInflater.from(parent.context)
+                .inflate(R.layout.item_gif, parent, false)
+            return GifViewHolder(view)
+        }
     }
 
 }
