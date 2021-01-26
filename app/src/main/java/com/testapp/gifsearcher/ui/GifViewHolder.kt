@@ -27,7 +27,8 @@ class GifViewHolder(itemView: View, private val onDisplayBigGifDialog: OnDisplay
             .setAutoPlayAnimations(true)
             .build()
 
-        gifView.aspectRatio = giphyData.images.fixedHeight.width.toFloat() / giphyData.images.fixedHeight.height.toFloat()
+        gifView.aspectRatio =
+            giphyData.images.fixedHeight.width.toFloat() / giphyData.images.fixedHeight.height.toFloat()
         gifView.controller = controller
 
         gifView.setOnClickListener {

@@ -39,6 +39,9 @@ class GifsDataSource(
                     },
                     {
                         if (it is NoNetworkException) updateState(LoadingState.NETWORK_ERROR)
+                        else updateState(
+                            LoadingState.UNIDENTIFIED_ERROR
+                        )
                         setRetryLoadingGifsAction { loadInitial(params, callback) }
                     }
                 )

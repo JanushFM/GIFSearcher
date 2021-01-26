@@ -8,6 +8,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content">
 
+        <ProgressBar
+            android:id="@+id/big_gif_ProgressBar"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
         <com.facebook.drawee.view.SimpleDraweeView
             android:id="@+id/big_gif_DraweeView"
             android:layout_width="match_parent"
@@ -19,6 +24,8 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/big_gif_DraweeView"
             android:textSize="15sp" />
+
+
     </RelativeLayout>
 </ScrollView>
 

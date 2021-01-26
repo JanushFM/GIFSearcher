@@ -97,15 +97,26 @@ class MainActivity : AppCompatActivity(), OnDisplayBigGifDialog {
                         }
                     }
                 } else {
-                    if (loadingState == LoadingState.NETWORK_ERROR) {
-                        retryLoadingFAB.visibility = View.VISIBLE
-                        Toast.makeText(
-                            this,
-                            getString(R.string.no_internet_connection),
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    } else if (loadingState == LoadingState.LOADED) {
-                        retryLoadingFAB.visibility = View.GONE
+                    when (loadingState) {
+                        LoadingState.NETWORK_ERROR -> {
+                            retryLoadingFAB.visibility = View.VISIBLE
+                            Toast.makeText(
+                                this,
+                                getString(R.string.no_internet_connection),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                        LoadingState.LOADED -> {
+                            retryLoadingFAB.visibility = View.GONE
+                        }
+                        else -> {
+                            retryLoadingFAB.visibility = View.VISIBLE
+                            Toast.makeText(
+                                this,
+                                getString(R.string.unidentified_error),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
                     }
                 }
             })
