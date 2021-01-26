@@ -2,6 +2,8 @@ package com.testapp.gifsearcher.models
 
 import androidx.lifecycle.MutableLiveData
 import androidx.paging.PositionalDataSource
+import com.testapp.gifsearcher.BuildConfig
+
 import com.testapp.gifsearcher.models.giphyPOJOs.GiphyData
 import com.testapp.gifsearcher.models.giphyPOJOs.GiphyResponse
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
@@ -25,7 +27,7 @@ class GifsDataSource(
     override fun loadInitial(params: LoadInitialParams, callback: LoadInitialCallback<GiphyData>) {
         val giphyResponse =
             getGifsFunc(
-                apiKey,
+                BuildConfig.API_KEY,
                 params.requestedLoadSize,
                 params.requestedStartPosition
             )
@@ -56,7 +58,7 @@ class GifsDataSource(
     override fun loadRange(params: LoadRangeParams, callback: LoadRangeCallback<GiphyData>) {
         val giphyResponse =
             getGifsFunc(
-                apiKey,
+                "123",
                 params.loadSize,
                 params.startPosition
             )
@@ -110,9 +112,5 @@ class GifsDataSource(
         if (action != null) {
             retryCompletable = Completable.fromAction(action)
         }
-    }
-
-    companion object {
-        private const val apiKey = "HiEkIy5bmsmDanYYJpIKtr65WcYXopQc"
     }
 }
