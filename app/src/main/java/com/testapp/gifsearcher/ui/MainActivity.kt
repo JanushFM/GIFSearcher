@@ -1,9 +1,11 @@
 package com.testapp.gifsearcher.ui
 
+import android.net.Uri
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -18,10 +20,11 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.testapp.gifsearcher.R
 import com.testapp.gifsearcher.adapters.GifsAdapter
 import com.testapp.gifsearcher.models.LoadingState
+import com.testapp.gifsearcher.models.OnDisplayBigGifDialog
 import com.testapp.gifsearcher.viewModels.GifsLoaderViewModel
 
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), OnDisplayBigGifDialog {
     private lateinit var recyclerView: RecyclerView
     private lateinit var gifsLoaderVM: GifsLoaderViewModel
     private lateinit var swipeContainer: SwipeRefreshLayout
@@ -38,7 +41,8 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         gifsLoaderVM = ViewModelProvider(
-            this, AndroidViewModelFactory(application)).get(GifsLoaderViewModel::class.java)
+            this, AndroidViewModelFactory(application)
+        ).get(GifsLoaderViewModel::class.java)
 
         recyclerView = findViewById(R.id.recycler_view_gifs)
         swipeContainer = findViewById(R.id.swipeContainer)
@@ -67,7 +71,7 @@ class MainActivity : AppCompatActivity() {
             StaggeredGridLayoutManager.VERTICAL
         )
         recyclerView.layoutManager = gridLayoutManager
-        gifsAdapter = GifsAdapter()
+        gifsAdapter = GifsAdapter(this)
         recyclerView.adapter = gifsAdapter
         gifsLoaderVM.gifsList.observe(this, {
             gifsAdapter.submitList(it)
@@ -150,5 +154,12 @@ class MainActivity : AppCompatActivity() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putCharSequence(searchQueryKey, searchView.query)
+    }
+
+    override fun displayBigGifDialog(gifURI: Uri, gifTitle: String, aspectRatio: Float) {
+        val displayBigGifDialog = DisplayBigGifDialog(gifURI, gifTitle, aspectRatio)
+        displayBigGifDialog.retainInstance = true
+
+        displayBigGifDialog.show(supportFragmentManager, "displayBigGifDialog")
     }
 }
