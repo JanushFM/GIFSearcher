@@ -39,13 +39,6 @@ class GifsLoaderViewModel(application: Application) : AndroidViewModel(applicati
         }
     }
 
-    fun getLoadingStateAndIsGifsListEmpty(): LiveData<Pair<LoadingState, Boolean>> = Transformations.map(
-        Transformations.switchMap(
-            gifsDataSourceFactory.gifsDataSourceLiveData,
-            GifsDataSource::loadingState
-        )
-    ) { Pair(it, gifsList.value.isNullOrEmpty()) }
-
     fun setQueryGifsGetter(query: String) {
         getGifsFunc.value = fun(apiKey: String, limit: Int, offset: Int): Single<GiphyResponse> {
             return giphyService.getGifsBySearchTerm(apiKey, query, limit, offset)
@@ -79,4 +72,97 @@ class GifsLoaderViewModel(application: Application) : AndroidViewModel(applicati
         super.onCleared()
         compositeDisposable.dispose()
     }
+
+
+    private fun getLoadingStateObserver(
+        listCondition: () -> Boolean,
+        loadingState: LoadingState,
+        switchMapFunc: (GifsDataSource) -> MutableLiveData<LoadingState>
+    ): LiveData<LoadingState> {
+
+        val stateObserver = Transformations.switchMap(
+            gifsDataSourceFactory.gifsDataSourceLiveData
+        ) { switchMapFunc(it) }
+
+        val mediatorStateObserver = MediatorLiveData<LoadingState>()
+
+        mediatorStateObserver.addSource(stateObserver) {
+            if (listCondition()) {
+                mediatorStateObserver.value = loadingState
+            }
+        }
+
+        return mediatorStateObserver
+    }
+
+
+    fun getNetworkErrorObserverWithNotEmptyGifsList(): LiveData<LoadingState> {
+        return getLoadingStateObserver(
+            getIsGifsListNotEmptyFunc(),
+            LoadingState.NETWORK_ERROR,
+            getNoNetworkSwitchMapFunc()
+        )
+    }
+
+    fun getNetworkErrorObserverWithEmptyGifsList(): LiveData<LoadingState> {
+        return getLoadingStateObserver(
+            getIsGifsListEmptyFunc(),
+            LoadingState.NETWORK_ERROR,
+            getNoNetworkSwitchMapFunc()
+        )
+    }
+
+    fun getUnidentifiedErrorObserverWithEmptyGifsList(): LiveData<LoadingState> {
+        return getLoadingStateObserver(
+            getIsGifsListEmptyFunc(), LoadingState.UNIDENTIFIED_ERROR,
+            getUnidentifiedErrorSwitchMapFunc()
+        )
+    }
+
+    fun getUnidentifiedErrorObserverWithNotEmptyGifsList(): LiveData<LoadingState> {
+        return getLoadingStateObserver(
+            getIsGifsListNotEmptyFunc(),
+            LoadingState.UNIDENTIFIED_ERROR,
+            getUnidentifiedErrorSwitchMapFunc()
+        )
+    }
+
+    fun getLoadedStateObserverWithNotEmptyGifsList(): LiveData<LoadingState> {
+        return getLoadingStateObserver(
+            getIsGifsListNotEmptyFunc(),
+            LoadingState.LOADED,
+            getLoadedSwitchMapFunc()
+        )
+    }
+
+    fun getLoadedStateObserverWithEmptyGifsList(): LiveData<LoadingState> {
+        return getLoadingStateObserver(
+            getIsGifsListEmptyFunc(),
+            LoadingState.LOADED,
+            getLoadedSwitchMapFunc()
+        )
+    }
+
+
+    private fun getIsGifsListEmptyFunc(): () -> Boolean {
+        return fun(): Boolean {
+            return gifsList.value.isNullOrEmpty()
+        }
+    }
+
+    private fun getIsGifsListNotEmptyFunc(): () -> Boolean {
+        return fun(): Boolean {
+            return !gifsList.value.isNullOrEmpty()
+        }
+    }
+
+    private fun getNoNetworkSwitchMapFunc() =
+        { gifsDataSource: GifsDataSource -> gifsDataSource.noNetworkState }
+
+    private fun getUnidentifiedErrorSwitchMapFunc() =
+        { gifsDataSource: GifsDataSource -> gifsDataSource.unidentifiedErrorState }
+
+    private fun getLoadedSwitchMapFunc() =
+        { gifsDataSource: GifsDataSource -> gifsDataSource.loadedState }
+
 }

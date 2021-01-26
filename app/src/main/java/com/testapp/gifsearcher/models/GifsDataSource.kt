@@ -16,6 +16,10 @@ class GifsDataSource(
     private val getGifsFunc: (apiKey: String, limit: Int, offset: Int) -> Single<GiphyResponse>
 ) : PositionalDataSource<GiphyData>() {
     val loadingState: MutableLiveData<LoadingState> = MutableLiveData()
+    val noNetworkState: MutableLiveData<LoadingState> = MutableLiveData()
+    val unidentifiedErrorState: MutableLiveData<LoadingState> = MutableLiveData()
+    val loadedState: MutableLiveData<LoadingState> = MutableLiveData()
+
     private lateinit var retryCompletable: Completable
 
     override fun loadInitial(params: LoadInitialParams, callback: LoadInitialCallback<GiphyData>) {
@@ -30,7 +34,7 @@ class GifsDataSource(
             giphyResponse
                 .subscribe(
                     { response ->
-                        updateState(LoadingState.LOADED)
+                        updateLoadedState()
                         callback.onResult(
                             response.data,
                             params.requestedStartPosition,
@@ -38,10 +42,11 @@ class GifsDataSource(
                         )
                     },
                     {
-                        if (it is NoNetworkException) updateState(LoadingState.NETWORK_ERROR)
-                        else updateState(
-                            LoadingState.UNIDENTIFIED_ERROR
-                        )
+                        if (it is NoNetworkException) {
+                            updateNoNetworkState()
+                        } else {
+                            updateUnidentifiedErrorState()
+                        }
                         setRetryLoadingGifsAction { loadInitial(params, callback) }
                     }
                 )
@@ -59,23 +64,33 @@ class GifsDataSource(
         compositeDisposable.add(
             giphyResponse.subscribe(
                 { response ->
-                    updateState(LoadingState.LOADED)
+                    updateLoadedState()
                     callback.onResult(
                         response.data
                     )
                 },
                 {
-                    if (it is NoNetworkException) updateState(LoadingState.NETWORK_ERROR) else updateState(
-                        LoadingState.UNIDENTIFIED_ERROR
-                    )
+                    if (it is NoNetworkException) {
+                        updateNoNetworkState()
+                    } else {
+                        updateUnidentifiedErrorState()
+                    }
                     setRetryLoadingGifsAction { loadRange(params, callback) }
                 }
             )
         )
     }
 
-    private fun updateState(loadingState: LoadingState) {
-        this.loadingState.postValue(loadingState)
+    private fun updateNoNetworkState() {
+        noNetworkState.postValue(LoadingState.NETWORK_ERROR)
+    }
+
+    private fun updateUnidentifiedErrorState() {
+        unidentifiedErrorState.postValue(LoadingState.UNIDENTIFIED_ERROR)
+    }
+
+    private fun updateLoadedState() {
+        loadedState.postValue(LoadingState.LOADED)
     }
 
     fun refreshGifs() {

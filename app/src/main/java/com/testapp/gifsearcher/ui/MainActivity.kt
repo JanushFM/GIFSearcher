@@ -2,6 +2,7 @@ package com.testapp.gifsearcher.ui
 
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -52,7 +53,7 @@ class MainActivity : AppCompatActivity(), OnDisplayBigGifDialog {
         noInternetGroup = findViewById(R.id.no_internet_Group)
 
         setRecyclerView()
-        setListeningLoadingState()
+        initStateObservers()
 
         savedSearchQuery = savedInstanceState?.getCharSequence(searchQueryKey)
 
@@ -62,6 +63,45 @@ class MainActivity : AppCompatActivity(), OnDisplayBigGifDialog {
 
         retryLoadingFAB.setOnClickListener {
             gifsLoaderVM.retryLoadingGifs()
+        }
+    }
+
+    private fun initStateObservers() {
+        gifsLoaderVM.getNetworkErrorObserverWithEmptyGifsList().observe(this, {
+            noInternetGroup.visibility = View.VISIBLE
+            retryLoadingFAB.visibility = View.GONE
+            loadingGifsExceptionTV.text = getString(R.string.no_internet_connection)
+        })
+
+        gifsLoaderVM.getNetworkErrorObserverWithNotEmptyGifsList().observe(this) {
+            retryLoadingFAB.visibility = View.VISIBLE
+            Toast.makeText(
+                this,
+                getString(R.string.no_internet_connection),
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+
+        gifsLoaderVM.getUnidentifiedErrorObserverWithNotEmptyGifsList().observe(this) {
+            retryLoadingFAB.visibility = View.VISIBLE
+            Toast.makeText(
+                this,
+                getString(R.string.unidentified_error),
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+
+        gifsLoaderVM.getUnidentifiedErrorObserverWithEmptyGifsList().observe(this) {
+            noInternetGroup.visibility = View.VISIBLE
+            loadingGifsExceptionTV.text = getString(R.string.unidentified_error)
+        }
+
+        gifsLoaderVM.getLoadedStateObserverWithNotEmptyGifsList().observe(this) {
+            retryLoadingFAB.visibility = View.GONE
+        }
+
+        gifsLoaderVM.getLoadedStateObserverWithEmptyGifsList().observe(this) {
+            noInternetGroup.visibility = View.GONE
         }
     }
 
@@ -77,49 +117,6 @@ class MainActivity : AppCompatActivity(), OnDisplayBigGifDialog {
             gifsAdapter.submitList(it)
             swipeContainer.isRefreshing = false
         })
-    }
-
-    private fun setListeningLoadingState() {
-        gifsLoaderVM.getLoadingStateAndIsGifsListEmpty()
-            .observe(this, { (loadingState, isGifsListEmpty) ->
-                if (isGifsListEmpty) {
-                    when (loadingState) {
-                        LoadingState.NETWORK_ERROR -> {
-                            noInternetGroup.visibility = View.VISIBLE
-                            loadingGifsExceptionTV.text = getString(R.string.no_internet_connection)
-                        }
-                        LoadingState.LOADED -> {
-                            noInternetGroup.visibility = View.GONE
-                        }
-                        else -> {
-                            noInternetGroup.visibility = View.VISIBLE
-                            loadingGifsExceptionTV.text = getString(R.string.unidentified_error)
-                        }
-                    }
-                } else {
-                    when (loadingState) {
-                        LoadingState.NETWORK_ERROR -> {
-                            retryLoadingFAB.visibility = View.VISIBLE
-                            Toast.makeText(
-                                this,
-                                getString(R.string.no_internet_connection),
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                        LoadingState.LOADED -> {
-                            retryLoadingFAB.visibility = View.GONE
-                        }
-                        else -> {
-                            retryLoadingFAB.visibility = View.VISIBLE
-                            Toast.makeText(
-                                this,
-                                getString(R.string.unidentified_error),
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                    }
-                }
-            })
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
